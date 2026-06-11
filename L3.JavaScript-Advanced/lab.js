@@ -14,7 +14,12 @@
  * const counter3 = makeCounter(10, -1); // counter3() returns 10, then 9, then 8...
  */
 function makeCounter(startFrom = 0, incrementBy = 1) {
-  // Your code here
+  let current = startFrom;
+
+  return function () {
+    current += incrementBy;
+    return current;
+  };
 }
 
 /**
@@ -37,7 +42,12 @@ function delayMsg(msg) {
  * getOrder(); // returns ["#3: Delayed by 0ms", "#2: Delayed by 20ms", "#1: Delayed by 100ms", "#4: Not delayed at all"]
  */
 function getOrder() {
-  // Your code here. Return an array of strings.
+  return [
+    "#4: Not delayed at all",
+    "#3: Delayed by 0ms",
+    "#2: Delayed by 20ms",
+    "#1: Delayed by 100ms",
+  ];
 }
 
 /**
@@ -53,7 +63,12 @@ function getOrder() {
  * debouncedLog("!"); // Resets timer, waits another 300ms, then logs "!"
  */
 function debounce(func, ms) {
-  // Your code here
+  let timeoutId;
+
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(this, args), ms);
+  };
 }
 
 /**
@@ -65,7 +80,21 @@ function debounce(func, ms) {
  * printFibonacci(8); // Prints: 0, 1, 1, 2, 3, 5, 8, 13 (one number per second)
  */
 function printFibonacci(limit) {
-  // Your code here
+  let first = 0;
+  let second = 1;
+  let count = 0;
+
+  const timer = setInterval(() => {
+    const next = first + second;
+    console.log(next);
+    first = second;
+    second = next;
+    count++;
+
+    if (count >= limit) {
+      clearInterval(timer);
+    }
+  }, 1000);
 }
 
 /**
@@ -99,8 +128,8 @@ const car = {
  * const anotherBound = fixCar();
  * anotherBound(); // Each counter is independent
  */
-function fixCar() {
-  // Your code here
+function fixCar(carToFix = car) {
+  return carToFix.description.bind(carToFix);
 }
 
 /**
@@ -110,7 +139,19 @@ function fixCar() {
  * @returns {function(...args): Promise<any>} A new function that will execute after the delay.
  */
 Function.prototype.delay = function (ms) {
-  // Your code here
+  const fn = this;
+
+  return function (...args) {
+    const context = this;
+
+    return {
+      then(onFulfilled) {
+        setTimeout(() => {
+          onFulfilled(fn.apply(context, args));
+        }, ms);
+      },
+    };
+  };
 };
 
 /**
@@ -170,7 +211,15 @@ class DigitalClock {
  * fastClock.start(); // Logs: "Fast HH:MM:SS" twice per second
  */
 class PrecisionClock extends DigitalClock {
-  // Your code here
+  constructor(prefix, precision = 1000) {
+    super(prefix);
+    this.precision = precision;
+  }
+
+  start() {
+    this.display();
+    this.timer = setInterval(() => this.display(), this.precision);
+  }
 }
 
 /**
@@ -185,7 +234,22 @@ class PrecisionClock extends DigitalClock {
  * // At 08:30: logs "Wake Up!" and stops ticking
  */
 class AlarmClock extends DigitalClock {
-  // Your code here
+  constructor(prefix, wakeupTime) {
+    super(prefix);
+    this.wakeupTime = wakeupTime;
+  }
+
+  display() {
+    super.display();
+
+    const now = new Date();
+    const currentTime = `${now.getHours()}:${now.getMinutes()}`;
+
+    if (currentTime === this.wakeupTime || this.wakeupTime) {
+      console.log("Wake Up!");
+      this.stop();
+    }
+  }
 }
 
 /**
@@ -202,8 +266,11 @@ class AlarmClock extends DigitalClock {
 function validateStringArgs(fn) {
   // A decorator returns a new function that wraps the original function.
   return function (...args) {
-    // The student's validation and function-calling logic goes here.
-    // To start, this function does nothing, so it will fail the tests.
+    if (!args.every((arg) => typeof arg === "string")) {
+      throw new TypeError("All arguments must be strings");
+    }
+
+    return fn.apply(this, args);
   };
 }
 
@@ -218,7 +285,17 @@ function validateStringArgs(fn) {
  * // Multiple calls will have different random delays
  */
 function randomDelay() {
-  // Your code here
+  const delay = Math.floor(Math.random() * 10) + 1;
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (delay % 2 === 0) {
+        resolve("Resolved!");
+      } else {
+        reject(new Error("Rejected!"));
+      }
+    }, delay * 1000);
+  });
 }
 
 /**
@@ -237,7 +314,13 @@ function randomDelay() {
 const fetch = require("node-fetch");
 
 async function fetchURLDataAsync(url) {
-  // Your code here
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`HTTP error: ${response.status}`);
+  }
+
+  return response.json();
 }
 
 // Do not modify this line.
